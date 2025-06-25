@@ -168,9 +168,34 @@ namespace ESP32_WIFI {
         
         wifi_config.ap.max_connection = maxConnections;
         wifi_config.ap.channel = channel;
+
+        // Set WiFi mode
+        wifi_mode_t mode = WIFI_MODE_NULL;
+        switch (_mode) {
+            case WiFiMode::STATION:
+                mode = WIFI_MODE_STA;
+                break;
+            case WiFiMode::ACCESS_POINT:
+                mode = WIFI_MODE_AP;
+                break;
+            case WiFiMode::BOTH:
+                mode = WIFI_MODE_APSTA;
+                break;
+        }
+        if(esp_wifi_set_mode(mode) != ESP_OK){
+            ESP_LOGE(TAG, "Failed to set WiFi mode");
+            return false;
+        }else{
+            ESP_LOGI(TAG, "WiFi mode set to %d", (int)mode);
+        }
         
-        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
-        
+        if(esp_wifi_set_config(WIFI_IF_AP, &wifi_config) != ESP_OK){
+            ESP_LOGE(TAG, "Failed to set WiFi config");
+            return false;
+        }else{
+            ESP_LOGI(TAG, "WiFi AP config set successfully");
+        }
+
         return true;
     }
 

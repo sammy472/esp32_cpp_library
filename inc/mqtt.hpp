@@ -126,7 +126,10 @@ namespace ESP32_MQTT {
          * @param qos Desired QoS
          * @return message id or negative on error
          */
-        int subscribe(const std::string& topic, int qos = 0);
+        int subscribe(
+            const std::string& topic, 
+            int qos = 0
+        );
 
         /**
          * @brief Unsubscribe from a topic
@@ -163,8 +166,8 @@ namespace ESP32_MQTT {
     private:
         MqttClient();
         ~MqttClient();
-        MqttClient(const MqttClient&) = delete;
-        MqttClient& operator=(const MqttClient&) = delete;
+        MqttClient(const MqttClient&) = delete; // Disable copy constructor
+        MqttClient& operator=(const MqttClient&) = delete; // Disable assignment operator
 
         /**
          * @brief Internal MQTT event handler
@@ -189,7 +192,8 @@ namespace ESP32_MQTT {
         bool                            _willRetain = false;
     };
 
-    // C-compatible wrappers
+    // C-compatible wrappers or interfaces for C++ class
+    // This allows using the MQTT client from C code as well
     extern "C" {
         int mqtt_init();
         int mqtt_configure(

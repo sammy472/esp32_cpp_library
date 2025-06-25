@@ -1,5 +1,7 @@
 #include <iostream>
 #include<string>
+#include <cstring>
+#include <fstream>
 #include "../inc/app.hpp" 
 #include "../inc/mqtt.hpp"
 #include "../inc/wifi.hpp"
@@ -35,6 +37,7 @@ void wifi_station_mode_example(void);
 void wifi_ap_mode_example(void);
 void mqtt_configure(void);
 void mqtt_run(void);
+//char* get_file_text(string filename);
 
 
 static void esp_app_main(void){
@@ -50,7 +53,7 @@ static void esp_app_main(void){
     
     // Choose which example to run
     wifi_station_mode_example();
-    // wifi_ap_mode_example();
+    wifi_ap_mode_example();
     mqtt_configure();
     mqtt_run();
     
@@ -149,13 +152,6 @@ void wifi_ap_mode_example(void) {
         return;
     }
     
-    // Start WiFi
-    ESP_LOGI(TAG_WIFI, "Starting WiFi access point...");
-    if (!wifi_start()) {
-        ESP_LOGE(TAG_WIFI, "Failed to start WiFi");
-        return;
-    }
-    
     ESP_LOGI(TAG_WIFI, "WiFi access point started");
     ESP_LOGI(TAG_WIFI, "SSID: %s", AP_SSID);
     ESP_LOGI(TAG_WIFI, "Password: %s", AP_PASS);
@@ -228,3 +224,22 @@ void mqtt_run(void) {
     ESP_LOGI(TAG_MQTT, "Topic: %s", subscribe_topic);
     ESP_LOGI(TAG_MQTT, "QoS: %d", subscribe_qos);
 }
+
+/*
+char* get_file_text(string filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        ESP_LOGE(TAG_MQTT, "Failed to open file: %s", filename.c_str());
+        return nullptr;
+    }
+    
+    string text;
+    getline(file, text, '\0'); // Read entire file
+    file.close();
+    
+    char* result = new char[text.size() + 1];
+    strcpy(result, text.c_str());
+    
+    return result;
+}
+*/

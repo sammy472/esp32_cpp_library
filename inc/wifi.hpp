@@ -62,8 +62,11 @@ public:
      * @param hostname Optional hostname for the ESP32
      * @return true if configuration successful
      */
-    bool configureStation(const std::string& ssid, const std::string& password, 
-                         const std::string& hostname = "");
+    bool configureStation(
+        const std::string& ssid, 
+        const std::string& password, 
+        const std::string& hostname = ""
+    );
 
     /**
      * @brief Configure as WiFi access point
@@ -73,8 +76,12 @@ public:
      * @param maxConnections Maximum number of connections
      * @return true if configuration successful
      */
-    bool configureAP(const std::string& ssid, const std::string& password = "", 
-                    uint8_t channel = 1, uint8_t maxConnections = 4);
+    bool configureAP(
+        const std::string& ssid, 
+        const std::string& password = "", 
+        uint8_t channel = 1, 
+        uint8_t maxConnections = 4
+    );
 
     /**
      * @brief Start WiFi with configured settings
@@ -111,7 +118,10 @@ public:
      * @param callback Function to call on WiFi events
      * @param userData User data to pass to callback
      */
-    void setEventCallback(WiFiEventCallback callback, void* userData = nullptr);
+    void setEventCallback(
+        WiFiEventCallback callback, 
+        void* userData = nullptr
+    );
 
     /**
      * @brief Wait for connection with timeout
@@ -135,8 +145,12 @@ private:
     WiFiManager& operator=(const WiFiManager&) = delete;
 
     // Internal event handler
-    static void wifiEventHandler(void* arg, esp_event_base_t eventBase, 
-                               int32_t eventId, void* eventData);
+    static void wifiEventHandler(
+        void* arg, 
+        esp_event_base_t eventBase, 
+        int32_t eventId, 
+        void* eventData
+    );
 
     // Internal state
     WiFiMode _mode;
@@ -169,7 +183,11 @@ extern "C" {
      * @param hostname Optional hostname for the ESP32 (can be NULL)
      * @return 1 if successful, 0 otherwise
      */
-    int wifi_configure_station(const char* ssid, const char* password, const char* hostname);
+    int wifi_configure_station(
+        const char* ssid, 
+        const char* password, 
+        const char* hostname
+    );
     
     /**
      * @brief Configure as WiFi access point
@@ -179,8 +197,12 @@ extern "C" {
      * @param max_connections Maximum number of connections
      * @return 1 if successful, 0 otherwise
      */
-    int wifi_configure_ap(const char* ssid, const char* password, 
-                         uint8_t channel, uint8_t max_connections);
+    int wifi_configure_ap(
+        const char* ssid, 
+        const char* password, 
+        uint8_t channel, 
+        uint8_t max_connections
+    );
     
     /**
      * @brief Start WiFi with configured settings
@@ -206,7 +228,10 @@ extern "C" {
      * @param buffer_size Size of buffer
      * @return 1 if IP available, 0 otherwise
      */
-    int wifi_get_ip_address(char* ip_buffer, size_t buffer_size);
+    int wifi_get_ip_address(
+        char* ip_buffer, 
+        size_t buffer_size
+    );
     
     /**
      * @brief Wait for connection with timeout
