@@ -1,5 +1,4 @@
 // @file ADCManager.cpp
-
 #include "../inc/adc.hpp"
 #include "esp_log.h"
 #include <cstring>
@@ -12,7 +11,7 @@ namespace ESP32_ADC {
         continuous_handle(nullptr), 
         cali_handle(nullptr), 
         user_callback(nullptr), 
-        continuous_running(false) {}
+        continuous_running(false){}
 
     ADCManager::~ADCManager() {
         if (continuous_running) {
@@ -36,10 +35,10 @@ namespace ESP32_ADC {
         adc_bitwidth_t bitwidth, 
         adc_atten_t atten
     ) {
-        adc_oneshot_unit_init_cfg_t unit_cfg = {
-            .unit_id = unit,
-            .ulp_mode = ADC_ULP_MODE_DISABLE
-        };
+        adc_oneshot_unit_init_cfg_t unit_cfg = {};
+        unit_cfg.unit_id = unit;
+        unit_cfg.ulp_mode = ADC_ULP_MODE_DISABLE;
+        unit_cfg.clk_src = ADC_RTC_CLK_SRC_RC_FAST;
 
         esp_err_t ret = adc_oneshot_new_unit(&unit_cfg, &one_shot_unit_handle);
         if (ret != ESP_OK) {
@@ -59,11 +58,11 @@ namespace ESP32_ADC {
         }
 
         // Setup calibration
-        adc_cali_line_fitting_config_t cali_cfg = {
-            .unit_id = unit,
-            .atten = atten,
-            .bitwidth = bitwidth
-        };
+        adc_cali_line_fitting_config_t cali_cfg = {};
+        cali_cfg.unit_id = unit;
+        cali_cfg.atten = atten;
+        cali_cfg.bitwidth = bitwidth;
+
         ret = adc_cali_create_scheme_line_fitting(&cali_cfg, &cali_handle);
         if (ret != ESP_OK) {
             ESP_LOGW(TAG, "Calibration not supported");
@@ -116,10 +115,10 @@ namespace ESP32_ADC {
         size_t sample_buffer_size
     ) {
 
-        adc_continuous_handle_cfg_t handle_cfg = {
-            .max_store_buf_size = sample_buffer_size,
-            .conv_frame_size = sample_buffer_size / 2
-        };
+        adc_continuous_handle_cfg_t handle_cfg = {};
+        handle_cfg.max_store_buf_size = sample_buffer_size;
+        handle_cfg.conv_frame_size = sample_buffer_size / 2;
+        handle_cfg.flags.flush_pool = true;
 
         esp_err_t ret = adc_continuous_new_handle(&handle_cfg, &continuous_handle);
         if (ret != ESP_OK) {
@@ -131,17 +130,16 @@ namespace ESP32_ADC {
         std::vector<adc_channel_t> adc_channels;
 
         for (auto ch : chs) {
-            //adc_channels.push_back({.channel = ch, .atten = atten});
+            adc_channels.push_back(ch);
             this->channel_atten_map[ch] = atten;
         }
 
-        adc_continuous_config_t adc_config = {
-            .sample_freq_hz = sample_freq_hz,
-            .conv_mode = ADC_CONV_SINGLE_UNIT_1,
-            .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
-            .pattern_num = static_cast<uint32_t>(adc_channels.size()),
-            .adc_pattern = reinterpret_cast<adc_digi_pattern_config_t*>(adc_channels.data())
-        };
+        adc_continuous_config_t adc_config = {};
+        adc_config.sample_freq_hz = sample_freq_hz;
+        adc_config.conv_mode = ADC_CONV_SINGLE_UNIT_1; 
+        adc_config.format = ADC_DIGI_OUTPUT_FORMAT_TYPE1;
+        adc_config.adc_pattern = reinterpret_cast<adc_digi_pattern_config_t*>(adc_channels.data());
+        adc_config.pattern_num = static_cast<uint32_t>(adc_channels.size());
 
         ret = adc_continuous_config(continuous_handle, &adc_config);
         if (ret != ESP_OK) {
@@ -149,7 +147,11 @@ namespace ESP32_ADC {
             return ret;
         }
 
-        ret = adc_continuous_register_event_callbacks(continuous_handle, &ADCManager::continuousCallback, this);
+        adc_continuous_evt_cbs_t cbs = {};
+        cbs.on_conv_done = ADCManager::continuousCallback;
+        cbs.on_pool_ovf = nullptr;
+
+        ret = adc_continuous_register_event_callbacks(continuous_handle, &cbs, this);
         if (ret != ESP_OK) {
             ESP_LOGW(TAG, "Failed to register callback");
         }
@@ -175,10 +177,12 @@ namespace ESP32_ADC {
         user_callback = std::move(cb);
     }
 
-    void ADCManager::continuousCallback(adc_continuous_handle_t handle, const adc_continuous_evt_data_t* event_data, void* user_data) {
+    bool  ADCManager::continuousCallback(adc_continuous_handle_t handle, const adc_continuous_evt_data_t* event_data, void* user_data) {
         ADCManager* manager = reinterpret_cast<ADCManager*>(user_data);
         if (manager && manager->user_callback) {
             manager->user_callback(*event_data);
+            return true;
         }
+        return false;
     }
 }

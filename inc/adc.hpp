@@ -1,5 +1,3 @@
-
-
 #pragma once
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_continuous.h"
@@ -10,6 +8,7 @@
 #include <map>
 #include "esp_err.h"
 #include "esp_log.h"
+
 
 namespace ESP32_ADC {
     class ADCManager {
@@ -55,7 +54,7 @@ namespace ESP32_ADC {
         adc_continuous_handle_t continuous_handle;
         adc_cali_handle_t cali_handle;
         std::function<void(const adc_continuous_evt_data_t&)> user_callback;
-        static void continuousCallback(
+        static bool continuousCallback(
             adc_continuous_handle_t, 
             const adc_continuous_evt_data_t*, 
             void*
